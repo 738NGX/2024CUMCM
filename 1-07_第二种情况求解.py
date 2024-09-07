@@ -163,40 +163,17 @@ cost_data = pd.read_csv("data/结果/full_种植成本.csv").iloc[:, 4:-1].value
 price_data = pd.read_csv("data/结果/full_销售单价.csv").iloc[:, 4:-1].values
 sale_data = pd.read_csv("data/结果/full_预期销售量.csv").iloc[:, 1:].values
 
-# S:实际销售量矩阵
-S = model.addVars(656, 41, vtype=copt.COPT.CONTINUOUS, lb=0)
-
-model.addConstrs(
-    S[i, j] <= X[i, j] * yield_data[i, j] for i in range(656) for j in range(41)
-)
-model.addConstrs(
-    copt.quicksum(
-        S[i, j]
-        for i in result_full[
-            (result_full["季度"] == 1)
-        ].index.tolist()
-    )
-    <= sale_data[0, j] * 432
-    for j in range(41)
-)
-model.addConstrs(
-    copt.quicksum(
-        S[i, j]
-        for i in result_full[
-            (result_full["季度"] == 2)
-        ].index.tolist()
-    )
-    <= sale_data[1, j] * 224
-    for j in range(41)
-)
-
 # 目标函数
 objective = copt.quicksum(
-    S[i, j] * price_data[i, j] - X[i, j] * cost_data[i, j]
+    0.5 * (X[i, j] - sale_data[0, j]) * price_data[i, j]
+    + sale_data[0, j] * price_data[i, j]
+    - X[i, j] * cost_data[i, j]
     for i in result_full[result_full["季度"] == 1].index.tolist()
     for j in range(41)
 ) + copt.quicksum(
-    S[i, j] * price_data[i, j] - X[i, j] * cost_data[i, j]
+    0.5 * (X[i, j] - sale_data[1, j]) * price_data[i, j]
+    + sale_data[1, j] * price_data[i, j]
+    - X[i, j] * cost_data[i, j]
     for i in result_full[result_full["季度"] == 2].index.tolist()
     for j in range(41)
 )
@@ -215,4 +192,4 @@ else:
     
 # 保存结果
 result_full.iloc[:, 4:-1] = optimized_X.round(2)
-result_full.to_csv("data/结果/result_full_case1.csv", index=False, encoding="utf-8-sig")
+result_full.to_csv("data/结果/result_full_case2.csv", index=False, encoding="utf-8-sig")
