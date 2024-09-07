@@ -161,7 +161,7 @@ for land in wet_lands:
 yield_data = pd.read_csv("data/结果/full_亩产量.csv").iloc[:, 4:-1].values
 cost_data = pd.read_csv("data/结果/full_种植成本.csv").iloc[:, 4:-1].values
 price_data = pd.read_csv("data/结果/full_销售单价.csv").iloc[:, 4:-1].values
-sale_data = pd.read_csv("data/结果/full_预期销售量.csv").iloc[:, 1:].values
+sale_data = pd.read_csv("data/结果/full_预期销售量.csv").iloc[:, 2:].values
 
 # S:实际销售量矩阵
 S = model.addVars(656, 41, vtype=copt.COPT.CONTINUOUS, lb=0)

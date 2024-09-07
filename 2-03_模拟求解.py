@@ -158,10 +158,12 @@ for land in wet_lands:
             name=f"wet_land_{land}_constraint_{i}",
         )
 
-yield_data = pd.read_csv("data/结果/full_亩产量.csv").iloc[:, 4:-1].values
-cost_data = pd.read_csv("data/结果/full_种植成本.csv").iloc[:, 4:-1].values
-price_data = pd.read_csv("data/结果/full_销售单价.csv").iloc[:, 4:-1].values
-sale_data = pd.read_csv("data/结果/full_预期销售量.csv").iloc[:, 2:].values
+yield_data = pd.read_csv("data/结果/full_亩产量_sim.csv").iloc[:, 4:-1].values
+cost_data = pd.read_csv("data/结果/full_种植成本_sim.csv").iloc[:, 4:-1].values
+price_data = pd.read_csv("data/结果/full_销售单价_sim.csv").iloc[:, 4:-1].values
+sale_data = pd.read_csv("data/结果/full_预期销售量_sim.csv")
+sale_data_mean1 = sale_data[sale_data["季度"] == 1].mean().values[2:]
+sale_data_mean2 = sale_data[sale_data["季度"] == 2].mean().values[2:]
 
 # S:实际销售量矩阵
 S = model.addVars(656, 41, vtype=copt.COPT.CONTINUOUS, lb=0)
@@ -172,14 +174,14 @@ model.addConstrs(
 
 # 目标函数
 objective = copt.quicksum(
-    0.5 * (S[i, j] - sale_data[0, j]) * price_data[i, j]
-    + sale_data[0, j] * price_data[i, j]
+    0.5 * (S[i, j] - sale_data_mean1[j]) * price_data[i, j]
+    + sale_data_mean1[j] * price_data[i, j]
     - X[i, j] * cost_data[i, j]
     for i in result_full[result_full["季度"] == 1].index.tolist()
     for j in range(41)
 ) + copt.quicksum(
-    0.5 * (S[i, j] - sale_data[1, j]) * price_data[i, j]
-    + sale_data[1, j] * price_data[i, j]
+    0.5 * (S[i, j] - sale_data_mean2[j]) * price_data[i, j]
+    + sale_data_mean2[j] * price_data[i, j]
     - X[i, j] * cost_data[i, j]
     for i in result_full[result_full["季度"] == 2].index.tolist()
     for j in range(41)
@@ -196,7 +198,7 @@ if model.status == copt.COPT.OPTIMAL:
             optimized_X[i, j] = X[i, j].x
 else:
     print("未找到最优解！")
-    
+
 # 保存结果
 result_full.iloc[:, 4:-1] = optimized_X.round(2)
-result_full.to_csv("data/结果/result_full_case2.csv", index=False, encoding="utf-8-sig")
+result_full.to_csv("data/结果/result_full_sim.csv", index=False, encoding="utf-8-sig")
