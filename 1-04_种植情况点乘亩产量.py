@@ -11,16 +11,20 @@ result_2023_multi.iloc[:, 1:] = multi
 def add_season_sums(df:pd.DataFrame) -> pd.DataFrame:
     first_season_sum = df.iloc[:6, 1:].sum().to_dict()
     second_season_sum = df.iloc[6:, 1:].sum().to_dict()
+    year_sum = df.iloc[:, 1:].sum().to_dict()
 
     first_season_row = {'土地类型': '第一季之和'}
     second_season_row = {'土地类型': '第二季之和'}
+    year_row = {'土地类型': '全年之和'}
 
     for col in df.columns[1:]:
         first_season_row[col] = first_season_sum[col]
         second_season_row[col] = second_season_sum[col]
+        year_row[col] = year_sum[col]
 
     df = df.append(first_season_row, ignore_index=True)
     df = df.append(second_season_row, ignore_index=True)
+    df = df.append(year_row, ignore_index=True)
     
     return df
 
